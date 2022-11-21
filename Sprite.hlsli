@@ -3,6 +3,7 @@ cbuffer ConstBufferDataMaterial : register(b0)
     // 色(RGBA)
     float4 color;
     matrix mat;//3D変換行列
+    float time;
 };
 
 // 頂点シェーダーの出力構造体
@@ -13,4 +14,5 @@ struct VSOutput
     float4 svpos : SV_POSITION;
     // uv値
     float2 uv  :TEXCOORD;
+
 };

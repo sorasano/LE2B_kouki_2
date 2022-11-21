@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <vector>
+#include <DirectXMath.h>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -16,6 +17,9 @@
 #include "WinApp.h"
 
 using namespace Microsoft::WRL;
+using namespace DirectX;
+
+#include <d3dcompiler.h>
 
 class DirectXCommon
 {
@@ -29,10 +33,15 @@ public:
 	void InitializeSwapchain();			//スワップチェーン関連
 	void InitializeRenderTargetView();	//レンダーターゲット関連
 	void InitializeDepthBuffer();		//深度バッファ関連
+	void InitializeMultipassRendering();//マルチパスレンタリング関連
+
 	void InitializeFence();				//フェンス関連
 	//描画
 	void PreDraw();		//描画前
-	void PostDraw();	//描画後 
+	void PostDraw();	//描画後
+
+	void PostEffectDraw();//ポストエフェクト描画
+
 	//ゲッター
 	ID3D12Device* GetDevice() { return device.Get(); }
 	IDXGISwapChain4* GetSwapChain() { return swapChain.Get(); }
@@ -43,6 +52,7 @@ public:
 	ID3D12CommandQueue* GetCommandQueue() { return commandQueue.Get(); }
 	ID3D12DescriptorHeap* GetRtvHeap() { return rtvHeap.Get(); }
 	ID3D12Fence* GetFence() { return fence.Get(); }
+
 public:
 	//メンバ変数
 	//ウィンドウ
@@ -68,12 +78,24 @@ private:
 	D3D12_CLEAR_VALUE depthClearValue{};
 	D3D12_RESOURCE_BARRIER barrierDesc{};
 
+	ComPtr<ID3D12Resource> _peraResource;
+	ComPtr<ID3D12DescriptorHeap> _peraRTVHeap; // レンダーターゲット用
+	ComPtr<ID3D12DescriptorHeap> _peraSRVHeap; //テクスチャ用
+	ComPtr<ID3D12RootSignature> _peraRS;
+	ComPtr<ID3D12PipelineState> _peraPipeline;
+
 public:
+
+	D3D12_VERTEX_BUFFER_VIEW  _peraVBV;
+
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc{};
+
 	std::vector<ComPtr<ID3D12Resource>>backBuffers;
 	std::vector<ComPtr<IDXGIAdapter4>>adapters;
 	ComPtr<IDXGIAdapter4> tmpAdapter;
 
 	UINT64 fenceVal = 0;
+
 };
 

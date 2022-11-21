@@ -21,3 +21,17 @@ float4 main(VSOutput input) : SV_TARGET
 	//‹P“x‚ğRGB‚É‘ã“ü‚µ‚Äo—Í
 	return float4(texcolor.rgb * brightness,texcolor.a);
 }
+
+//float WhiteNoise(float2 coord) {
+//	return frac(sin(dot(coord, float2(8.7819, 3.255))) * 437.645);
+//}
+//
+//float4 main(VSOutput input) : SV_TARGET
+//{
+//
+//	float2 samplePoint = input.uv;
+//	float4 Tex = tex.Sample(smp, samplePoint);
+//	float noise = WhiteNoise(input.uv * Time) - 0.5;
+//	Tex.rgb += float3(noise, noise, noise);
+//	return Tex;
+//}

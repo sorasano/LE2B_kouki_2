@@ -311,7 +311,7 @@ void Sprite::SpriteCommonBeginDraw(ID3D12GraphicsCommandList* cmdList,const Spri
 //スプライト単体描画
 
 void Sprite::SpriteDraw(ID3D12GraphicsCommandList* cmdList,const Sprite& sprite,const SpriteCommon& spriteCommon, ID3D12Device* dev) {
-	
+
 	//this->cmmandList = dx->GetCommandList();
 
 	// 頂点バッファの設定コマンド
@@ -356,17 +356,20 @@ SpriteCommon Sprite::SpriteCommonCreate(ID3D12Device* dev, int window_width, int
 
 void Sprite::SpriteUpdate(Sprite& sprite, const SpriteCommon& spriteCommon) {
 
+	time++;
+
 	sprite.matWorld = XMMatrixIdentity();
 
 	sprite.matWorld *= XMMatrixRotationZ(XMConvertToRadians(sprite.rotation));
 
 	sprite.matWorld *= XMMatrixTranslation(sprite.position.x, sprite.position.y, sprite.position.z);
-
+	
 
 	// 定数バッファにデータ転送
 	ConstBufferData* constMap = nullptr;
 	HRESULT result = sprite.constBuff->Map(0, nullptr, (void**)&constMap); // マッピング
 	constMap->mat = sprite.matWorld * spriteCommon.matProjrction;
+	constMap->time = time;
 	sprite.constBuff->Unmap(0, nullptr);
 }
 

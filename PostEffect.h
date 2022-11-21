@@ -18,41 +18,9 @@ using namespace Microsoft::WRL;
 
 #include "DirectXCommon.h"
 
-struct PipelineSet {
+#include "Sprite.h"
 
-	ComPtr<ID3D12PipelineState> pipelinestate;
-
-	ComPtr<ID3D12RootSignature> rootsignature;
-
-};
-
-
-//スプライト用
-struct VertexPosUv {
-	XMFLOAT3 pos;
-	XMFLOAT2 uv;
-};
-
-//スプライトの共通データ
-struct SpriteCommon {
-
-	//テクスチャの最大枚数
-	static const int spriteSRVCount = 512;
-
-	//パイプラインセット
-	PipelineSet pipelineSet;
-
-	//射影行列
-	XMMATRIX matProjrction{};
-
-	//テクスチャ用デスクリプタヒープの生成
-	ComPtr<ID3D12DescriptorHeap> descHeap;
-	//テクスチャソース(テクスチャバッファ)の配列
-	ComPtr<ID3D12Resource> texBuff[spriteSRVCount];
-
-};
-
-class Sprite
+class PostEffect
 {
 	//-----------スプライト----------
 
@@ -100,26 +68,26 @@ private:
 public:
 
 	//スプライト生成
-	Sprite SpriteCreate(ID3D12Device* dev, int window_width, int window_height);
+	PostEffect SpriteCreate(ID3D12Device* dev, int window_width, int window_height);
 
 	//スプライト共通データ生成
-	SpriteCommon SpriteCommonCreate(ID3D12Device* dev, int window_width, int window_height);
+	PostEffect SpriteCommonCreate(ID3D12Device* dev, int window_width, int window_height);
 
 	//スプライト共通グラフィックスコマンドのセット
-	void SpriteCommonBeginDraw(ID3D12GraphicsCommandList* cmdList,const SpriteCommon& spriteCommon);
+	void SpriteCommonBeginDraw(ID3D12GraphicsCommandList* cmdList, const SpriteCommon& spriteCommon);
 
 	//スプライト単体描画
 
-	void SpriteDraw(ID3D12GraphicsCommandList* cmdList,const Sprite& sprite,const SpriteCommon& spriteCommon, ID3D12Device* dev);
+	void SpriteDraw(ID3D12GraphicsCommandList* cmdList, const PostEffect& sprite, const SpriteCommon& spriteCommon, ID3D12Device* dev);
 
 	//スプライト単体更新
-	void SpriteUpdate(Sprite& sprite, const SpriteCommon& spriteCommon);
+	void SpriteUpdate(PostEffect& sprite, const SpriteCommon& spriteCommon);
 
 	//スプライト共通テクスチャ読み込み
 	void SpriteCommonLoadTexture(SpriteCommon& spriteCommon, UINT texnumber, const wchar_t* filename, ID3D12Device* dev);
 
 	//スプライト単体頂点バッファの転送
-	void SpriteTransferVertexBuffer(const Sprite& sprite);
+	void SpriteTransferVertexBuffer(const PostEffect& sprite);
 
 	//セッター
 	void SetTexNumber(UINT texnumber) { this->texNumber = texnumber; }
