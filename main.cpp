@@ -56,8 +56,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		dx->PreDraw();
 
-		pera_->Draw();
-
 		// 4. •`‰æƒRƒ}ƒ“ƒh
 		//gameScene->Draw();
 		pera_->Draw();

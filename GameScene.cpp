@@ -40,6 +40,7 @@ void GameScene::Initialize(DirectXCommon* dxCommon, Input* input)
 	sprite_->SpriteCommonLoadTexture(spriteCommon_, 3, L"Resources/testTexture.png", dxCommon_->GetDevice());
 	sprite_->SpriteCommonLoadTexture(spriteCommon_, 4, L"Resources/texture.png", dxCommon_->GetDevice());
 
+	sprite_->SpriteCommonLoadTexture(spriteCommon_, 100, L"Resources/clear.png", dxCommon_->GetDevice());
 
 	////スプライトの生成
 	//titleSprite_ = titleSprite_.SpriteCreate(dxCommon_->GetDevice(), 1280, 720);
