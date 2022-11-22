@@ -25,6 +25,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	gameScene = new GameScene();
 	gameScene->Initialize(dx, input);
 
+
+	Pera* pera_ = new Pera();
+	pera_->Initialize(dx->GetDevice(), dx);
+
 #pragma endregion
 
 	//ゲームループ
@@ -40,12 +44,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		gameScene->Update();
 
-		dx->PreDraw();
+
+		dx->PeraPreDraw();
+
 		// 4. 描画コマンド
 		gameScene->Draw();
+		//pera_->Draw();
 
+		dx->PeraPostDraw();
+
+
+		dx->PreDraw();
+
+		pera_->Draw();
+
+		// 4. 描画コマンド
+		//gameScene->Draw();
+		pera_->Draw();
 
 		dx->PostDraw();
+
 
 #pragma endregion
 

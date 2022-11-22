@@ -40,6 +40,9 @@ public:
 	void PreDraw();		//描画前
 	void PostDraw();	//描画後
 
+	void PeraPreDraw();		//描画前
+	void PeraPostDraw();	//描画後
+
 	void PostEffectDraw();//ポストエフェクト描画
 
 	//ゲッター
@@ -51,7 +54,10 @@ public:
 	ID3D12CommandAllocator* GetCommandAllocator() { return commandAllocator.Get(); }
 	ID3D12CommandQueue* GetCommandQueue() { return commandQueue.Get(); }
 	ID3D12DescriptorHeap* GetRtvHeap() { return rtvHeap.Get(); }
+	ID3D12DescriptorHeap* GetPeraRtvHeap() { return _peraRTVHeap.Get(); }
 	ID3D12Fence* GetFence() { return fence.Get(); }
+	ID3D12DescriptorHeap* GetPeraSRVHeap() { return _peraSRVHeap.Get(); }
+	CD3DX12_GPU_DESCRIPTOR_HANDLE GetSrv() { return gpuDescHandleSRV; };
 
 public:
 	//メンバ変数
@@ -78,15 +84,18 @@ private:
 	D3D12_CLEAR_VALUE depthClearValue{};
 	D3D12_RESOURCE_BARRIER barrierDesc{};
 
-	ComPtr<ID3D12Resource> _peraResource;
 	ComPtr<ID3D12DescriptorHeap> _peraRTVHeap; // レンダーターゲット用
 	ComPtr<ID3D12DescriptorHeap> _peraSRVHeap; //テクスチャ用
-	ComPtr<ID3D12RootSignature> _peraRS;
-	ComPtr<ID3D12PipelineState> _peraPipeline;
+	UINT descriptorHandleIncrementSize;
+	// シェーダリソースビューのハンドル(CPU)
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV;
+	// シェーダリソースビューのハンドル(GPU)
+	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV;
+	//ComPtr<ID3D12RootSignature> _peraRS;
+	//ComPtr<ID3D12PipelineState> _peraPipeline;
+	ComPtr<ID3D12Resource> _peraResource;
 
 public:
-
-	D3D12_VERTEX_BUFFER_VIEW  _peraVBV;
 
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc{};

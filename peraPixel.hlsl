@@ -1,6 +1,9 @@
 #include "peraHeader.hlsli"
 
-float4 main(Output input) : SV_TARGET
+float4 main(Output input) : SV_Target
 {
-	return float4(input.uv, 1.0f, 1.0f);
+	//float4 col = tex.Sample(smp, input.uv);
+	return tex.Sample(smp,input.uv);
+	/*return float4(input.uv,1,1);*/
+	//return float4(1.0f - col.rgb,col.a);
 }

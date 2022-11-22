@@ -11,6 +11,7 @@
 #include "Player.h"
 #include "Sound.h"
 #include "Sprite.h"
+#include "Pera.h"
 
 class GameScene
 {
@@ -45,6 +46,8 @@ private:
 
 	//ƒ^ƒCƒgƒ‹
 	Sprite titleSprite_;
+
+	Pera *pera_ = new Pera;
 
 	//ŽË‰e•ÏŠ·
 	XMMATRIX matProjection = XMMatrixPerspectiveFovLH(

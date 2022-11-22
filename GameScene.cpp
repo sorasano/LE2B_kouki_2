@@ -54,6 +54,8 @@ void GameScene::Initialize(DirectXCommon* dxCommon, Input* input)
 	//スプライト用パイプライン生成呼び出し
 	PipelineSet spritePipelineSet = sprite_->SpriteCreateGraphicsPipeline(dxCommon_->GetDevice());
 
+	//pera_->Initialize(dxCommon_->GetDevice(),dxCommon_);
+
 }
 
 void GameScene::Update()
@@ -75,6 +77,8 @@ void GameScene::Update()
 void GameScene::Draw()
 {
 	player_->Draw();
+
+	//pera_->Draw();
 
 	////スプライト共通コマンド
 	//sprite_->SpriteCommonBeginDraw(dxCommon_->GetCommandList(), spriteCommon_);
