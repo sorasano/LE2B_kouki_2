@@ -183,7 +183,7 @@ void DirectXCommon::InitializeRenderTargetView()
 		//レンダーターゲットビューの設定
 		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 		//シェーダーの計算結果をSRGBに変換して書き込む
-		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		//レンダーターゲットビュの生成
 		device->CreateRenderTargetView(backBuffers[i].Get(), &rtvDesc, rtvHandle);
@@ -252,7 +252,7 @@ void DirectXCommon::InitializeMultipassRendering()
 	//D3D12_HEAP_PROPERTIES heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	//{
 	//	//レンタリング時のクリア時と同じ値
-	//	float clsClr[] = { 0.5f,0.5f,0.5f,1.0f };
+	//	float clsClr[] = { 100.5f,0.5f,0.5f,1.0f };
 	//	D3D12_CLEAR_VALUE clearValue = CD3DX12_CLEAR_VALUE(DXGI_FORMAT_R8G8B8A8_UNORM, clsClr);
 
 	//	auto result = device->CreateCommittedResource(&heapProp,
@@ -304,7 +304,7 @@ void DirectXCommon::InitializeMultipassRendering()
 	//レンダーターゲットビューの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	//シェーダーの計算結果をSRGBに変換して書き込む
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 	
 	//レンダーターゲットビュの生成
@@ -368,6 +368,7 @@ void DirectXCommon::InitializeMultipassRendering()
 		&srvDesc, //テクスチャ設定情報
 		cpuDescHandleSRV
 	);
+
 }
 
 #pragma endregion
@@ -386,22 +387,6 @@ void DirectXCommon::PreDraw()
 	//バックバッファの番号を取得(2つなので0番か1番)
 	UINT bbIndex = GetSwapChain()->GetCurrentBackBufferIndex();
 
-	////リソースバリア変更
-	//barrierDesc.Transition.pResource = _peraResource.Get();	//バックバッファを指定
-	//barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;	//表示状態から
-	//barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態へ
-	//GetCommandList()->ResourceBarrier(1, &barrierDesc);
-
-	//// 2. 描画先の変更
-	//// レンダーターゲットビューのハンドルを取得
-	//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
-	////1パス目
-	//auto rtvHeapPointer = GetPeraRtvHeap()->GetCPUDescriptorHandleForHeapStart();
-
-	//GetCommandList()->OMSetRenderTargets(
-	//	1, &rtvHeapPointer, false,
-	//	&dsvHandle);
-
 	// リソースバリア変更
 	barrierDesc.Transition.pResource = backBuffers[bbIndex].Get();	//バックバッファを指定
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//表示状態から
@@ -418,7 +403,7 @@ void DirectXCommon::PreDraw()
 
 	// 3. 画面クリアコマンド   R     G    B    A
 
-	FLOAT clearColor[] = { 0.5f,0.5f,0.5f,1.0f };
+	FLOAT clearColor[] = {0.5f,0.5f,100.5f,1.0f };
 	GetCommandList()->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	GetCommandList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
@@ -501,15 +486,16 @@ void DirectXCommon::PeraPreDraw()
 	//1パス目
 	auto rtvHeapPointer = _peraRTVHeap->GetCPUDescriptorHandleForHeapStart();
 
+	// 3. 画面クリアコマンド   R     G    B    A
+
+	FLOAT clearColor[] = { 0.5f,0.5f,100.5f,1.0f };
+	GetCommandList()->ClearRenderTargetView(rtvHeapPointer, clearColor, 0, nullptr);
+	GetCommandList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	
 	GetCommandList()->OMSetRenderTargets(
 		1, &rtvHeapPointer, false,
 		&dsvHandle);
-
-	// 3. 画面クリアコマンド   R     G    B    A
-
-	FLOAT clearColor[] = { 0.5f,0.5f,0.5f,1.0f };
-	GetCommandList()->ClearRenderTargetView(rtvHeapPointer, clearColor, 0, nullptr);
-	GetCommandList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	// ビューポートの設定
 	CD3DX12_VIEWPORT viewport;
@@ -538,6 +524,7 @@ void DirectXCommon::PeraPostDraw()
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;			//表示状態へ
 	GetCommandList()->ResourceBarrier(1, &barrierDesc);
+
 
 	HRESULT result;
 

@@ -239,7 +239,7 @@ Sprite Sprite::SpriteCreate(ID3D12Device* dev, int window_width, int window_heig
 	CD3DX12_HEAP_PROPERTIES heapPropsVertexBuffer = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	// リソース設定
 	CD3DX12_RESOURCE_DESC resourceDescVertexBuffer =
-		CD3DX12_RESOURCE_DESC::Buffer(sizeof(VertexPosUv));
+		CD3DX12_RESOURCE_DESC::Buffer(sizeof(vertices));
 
 	//頂点バッファ生成
 	result = dev->CreateCommittedResource(

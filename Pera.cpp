@@ -26,11 +26,34 @@ void Pera::Initialize(ComPtr<ID3D12Device> device, DirectXCommon* dx) {
 	std::copy(std::begin(pv), std::end(pv), mappedPera);
 	_peraVB->Unmap(0, nullptr);
 
-
 	// 頂点バッファビューの作成
 	_peraVBV.BufferLocation = _peraVB->GetGPUVirtualAddress();
 	_peraVBV.SizeInBytes = sizeof(pv);
 	_peraVBV.StrideInBytes = sizeof(PeraVertex);
+
+
+	// ヒーププロパティ
+	CD3DX12_HEAP_PROPERTIES heapPropsConstantBuffer = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+	// リソース設定
+	CD3DX12_RESOURCE_DESC resourceDescConstantBuffer =
+		CD3DX12_RESOURCE_DESC::Buffer((sizeof(ConstBufferData) + 0xff) & ~0xff);
+
+	// 定数バッファの生成
+	result = device->CreateCommittedResource(
+		&heapPropsConstantBuffer, // ヒープ設定
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDescConstantBuffer, // リソース設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&constBuff));
+	assert(SUCCEEDED(result));
+
+	// 定数バッファにデータ転送
+	ConstBufferData* constMap = nullptr;
+	result = constBuff->Map(0, nullptr, (void**)&constMap); // マッピング
+	constMap->mode = mode;
+	constMap->time = time;
+	constBuff->Unmap(0, nullptr);
 
 	//ペラポリゴンパイプラインとルートシグネチャ
 
@@ -138,29 +161,58 @@ void Pera::Initialize(ComPtr<ID3D12Device> device, DirectXCommon* dx) {
 	gpsDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 	{
-		D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
-		rsDesc.NumParameters = 0;
-		rsDesc.NumStaticSamplers = 0;
+		//D3D12_ROOT_SIGNATURE_DESC rsDesc = {};
+		//rsDesc.NumParameters = 0;
+		//rsDesc.NumStaticSamplers = 0;
+		//rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		//D3D12_DESCRIPTOR_RANGE range = {};
+
+		//range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		//range.BaseShaderRegister = 0;
+		//range.NumDescriptors = 1;
+
+		//D3D12_ROOT_PARAMETER rp = {};
+		//rp.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		//rp.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		//rp.DescriptorTable.pDescriptorRanges = &range;
+		//rp.DescriptorTable.NumDescriptorRanges = 1;
+
+		//D3D12_STATIC_SAMPLER_DESC sampler = CD3DX12_STATIC_SAMPLER_DESC(0);
+
+		//rsDesc.NumParameters = 1;
+		//rsDesc.pParameters = &rp;
+		//rsDesc.NumStaticSamplers = 1;
+		//rsDesc.pStaticSamplers = &sampler;
+
+		CD3DX12_DESCRIPTOR_RANGE descriptorRange{};
+		descriptorRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+
+		CD3DX12_ROOT_PARAMETER rootParams[2];
+		rootParams[0].InitAsConstantBufferView(0);
+		rootParams[1].InitAsDescriptorTable(1, &descriptorRange, D3D12_SHADER_VISIBILITY_ALL);
+
+		// テクスチャサンプラーの設定
+		D3D12_STATIC_SAMPLER_DESC samplerDesc{};
+		samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;                 //横繰り返し（タイリング）
+		samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;                 //縦繰り返し（タイリング）
+		samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;                 //奥行繰り返し（タイリング）
+		samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;  //ボーダーの時は黒
+		samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;                   //全てリニア補間
+		samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;                                 //ミップマップ最大値
+		samplerDesc.MinLOD = 0.0f;                                              //ミップマップ最小値
+		samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+		samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;           //ピクセルシェーダからのみ使用可能
+
+		// ルートシグネチャの設定
+		D3D12_ROOT_SIGNATURE_DESC rsDesc{};
 		rsDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		rsDesc.pParameters = rootParams; //ルートパラメータの先頭アドレス
+		rsDesc.NumParameters = _countof(rootParams);        //ルートパラメータ数
 
-		D3D12_DESCRIPTOR_RANGE range = {};
-
-		range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		range.BaseShaderRegister = 0;
-		range.NumDescriptors = 1;
-
-		D3D12_ROOT_PARAMETER rp = {};
-		rp.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-		rp.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-		rp.DescriptorTable.pDescriptorRanges = &range;
-		rp.DescriptorTable.NumDescriptorRanges = 1;
-
-		D3D12_STATIC_SAMPLER_DESC sampler = CD3DX12_STATIC_SAMPLER_DESC(0);
-
-		rsDesc.NumParameters = 1;
-		rsDesc.pParameters = &rp;
+		rsDesc.pStaticSamplers = &samplerDesc;
 		rsDesc.NumStaticSamplers = 1;
-		rsDesc.pStaticSamplers = &sampler;
+
 
 		ComPtr<ID3DBlob> rsBlob;
 		auto result = D3D12SerializeRootSignature(
@@ -186,6 +238,20 @@ void Pera::Initialize(ComPtr<ID3D12Device> device, DirectXCommon* dx) {
 
 }
 
+void Pera::Update()
+{
+
+	time += 0.001;
+
+	// 定数バッファにデータ転送
+	ConstBufferData* constMap = nullptr;
+	HRESULT result = constBuff->Map(0, nullptr, (void**)&constMap); // マッピング
+	constMap->mode = mode;
+	constMap->time = time;
+	constBuff->Unmap(0, nullptr);
+
+}
+
 void Pera::Draw() {
 
 	this->commandList = dx->GetCommandList();
@@ -193,8 +259,13 @@ void Pera::Draw() {
 
 	commandList->SetGraphicsRootSignature(_peraRS.Get());
 	commandList->SetPipelineState(_peraPipeline.Get());
+
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	commandList->IASetVertexBuffers(0, 1, &_peraVBV);
+
+	// 定数バッファ(CBV)の設定コマンド
+	commandList->SetGraphicsRootConstantBufferView(0, constBuff->GetGPUVirtualAddress());
+
 
 	this->_peraSRVHeap = dx->GetPeraSRVHeap();
 
@@ -202,7 +273,7 @@ void Pera::Draw() {
 
 	auto handle = _peraSRVHeap->GetGPUDescriptorHandleForHeapStart();
 
-	commandList->SetGraphicsRootDescriptorTable(0, handle);
+	commandList->SetGraphicsRootDescriptorTable(1, handle);
 
 
 	commandList->DrawInstanced(4, 1, 0, 0);

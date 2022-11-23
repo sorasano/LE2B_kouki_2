@@ -44,23 +44,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		gameScene->Update();
 
+		pera_->Update();
+
+
 
 		dx->PeraPreDraw();
 
-		// 4. 描画コマンド
 		gameScene->Draw();
-		//pera_->Draw();
 
 		dx->PeraPostDraw();
 
 
 		dx->PreDraw();
 
-		// 4. 描画コマンド
-		//gameScene->Draw();
 		pera_->Draw();
 
 		dx->PostDraw();
+
+
+		//dx->PeraPreDraw();
+
+		//dx->PreDraw();
+
+		//gameScene->Draw();
+
+		//pera_->Draw();
+
+		//dx->PeraPostDraw();
 
 
 #pragma endregion
